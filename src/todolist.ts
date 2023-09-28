@@ -9,6 +9,8 @@ interface Todo {
   isComplete: boolean;
 }
 
+let todos: Todo[] = JSON.parse(localStorage.getItem("todos") || "[]");
+
 const handleSubmit = (event: Event) => {
   event.preventDefault();
 
@@ -19,6 +21,8 @@ const handleSubmit = (event: Event) => {
   };
 
   addTodoToDom(newTodo);
+  todos.push(newTodo);
+  saveTodosInLocalStorage();
 
   todoValue.value = "";
   todoValue.focus();
@@ -28,7 +32,7 @@ const addTodoToDom = (todo: Todo) => {
   todoList.insertAdjacentHTML(
     "beforeend",
     `
-        <li>
+        <li onclick="removeTodo('${todo.id}')">
           ${todo.title}<span class="icon"
             ><i class="fas fa-trash"></i
           ></span>
@@ -37,4 +41,26 @@ const addTodoToDom = (todo: Todo) => {
   );
 };
 
+const saveTodosInLocalStorage = () => {
+  localStorage.setItem("todos", JSON.stringify(todos));
+  return true;
+};
+
+const removeTodo = (todoID: string) => {
+  todos = todos.filter((todo) => todo.id !== todoID);
+  saveTodosInLocalStorage();
+  todoList.innerHTML = "";
+  todos.forEach((todo) => addTodoToDom(todo));
+};
+
 addTodo.addEventListener("click", (event) => handleSubmit(event));
+
+window.addEventListener("DOMContentLoaded", () =>
+  todos.forEach((todo) => addTodoToDom(todo))
+);
+
+clearTodos.addEventListener("click", () => {
+  todoList.innerHTML = "";
+  todos = [];
+  saveTodosInLocalStorage();
+});
